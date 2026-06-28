@@ -644,6 +644,12 @@ export default function App() {
 
     element.innerHTML = htmlContent;
 
+    // CRITICAL FIX: The element must be in the DOM for html2canvas to render it
+    element.style.position = "absolute";
+    element.style.left = "-9999px";
+    element.style.top = "0";
+    document.body.appendChild(element);
+
     const opt = {
       margin: 15,
       filename: formData.pgName
@@ -654,7 +660,15 @@ export default function App() {
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     };
 
-    window.html2pdf().set(opt).from(element).save();
+    window
+      .html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .then(() => {
+        // Clean up: Remove the temporary element after the PDF is saved
+        document.body.removeChild(element);
+      });
   };
 
   return (
